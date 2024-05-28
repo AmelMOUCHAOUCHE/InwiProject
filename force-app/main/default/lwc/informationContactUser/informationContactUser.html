@@ -1,0 +1,45 @@
+<template>
+    <lightning-card title="Formulaire Utilisateur">
+        <div class="slds-p-around_medium">
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="civilite">Civilité <abbr class="slds-required" title="required">*</abbr></label>
+                <lightning-combobox id="civilite" name="civilite" value={civilite} options={civiliteOptions} onchange={handleCiviliteChange}></lightning-combobox>
+                <template if:true={errorMessageCivilite}>
+                    <div class="slds-form-element__help slds-text-color_error">{errorMessageCivilite}</div>
+                </template>
+            </div>
+
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="nom">Nom <abbr class="slds-required" title="required">*</abbr></label>
+                <lightning-input id="nom" name="nom" value={nom} onchange={handleNomChange}></lightning-input>
+                <template if:true={errorMessageNom}>
+                    <div class="slds-form-element__help slds-text-color_error">{errorMessageNom}</div>
+                </template>
+            </div>
+
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="prenom">Prénom <abbr class="slds-required" title="required">*</abbr></label>
+                <lightning-input id="prenom" name="prenom" value={prenom} onchange={handlePrenomChange}></lightning-input>
+                <template if:true={errorMessagePrenom}>
+                    <div class="slds-form-element__help slds-text-color_error">{errorMessagePrenom}</div>
+                </template>
+            </div>
+
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="email">Email <abbr class="slds-required" title="required">*</abbr></label>
+                <lightning-input id="email" name="email" type="email" value={email} onchange={handleEmailChange}></lightning-input>
+                <template if:true={errorMessageEmail}>
+                    <div class="slds-form-element__help slds-text-color_error">{errorMessageEmail}</div>
+                </template>
+            </div>
+
+            <div class="slds-form-element">
+                <label class="slds-form-element__label" for="username">Username <abbr class="slds-required" title="required" if:true={required}>*</abbr></label>
+                <lightning-input id="username" name="username" value={username} onchange={handleUsernameChange}></lightning-input>
+                <template if:true={errorMessageUsername}>
+                    <div class="slds-form-element__help slds-text-color_error">{errorMessageUsername}</div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>
