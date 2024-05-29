@@ -1,21 +1,23 @@
 <template>
     <lightning-card title="Type d'Utilisateur" icon-name="standard:user">
+    <div class="slds-p-around_medium">
         <div class="slds-form-element">
             <label class="slds-form-element__label" for="combobox-id-typeUtilisateur">
-                Type d'Utilisateur <abbr class="slds-required" title="required" if:true={required}>*</abbr>
+                <!--Type d'Utilisateur--> <abbr class="slds-required" title="required" if:true={required}><!--*--></abbr>
             </label>
-            <lightning-combobox
-                id="combobox-id-typeUtilisateur"
-                name="typeUtilisateur"
-                placeholder="Sélectionner le type d'utilisateur"
-                options={options}
-                value={selectedType}
-                onchange={handleTypeChange}
-                >
-            </lightning-combobox>
+            <lightning-combobox 
+            label="Type d'Utilisateur" 
+            id="combobox-id-typeUtilisateur" 
+            name="typeUtilisateur" 
+            placeholder="Sélectionner le type d'utilisateur" 
+            options={options} value={selectedType} 
+            onchange={handleTypeChange} 
+            required="true">
+        </lightning-combobox>
             <template if:true={errorMessage}>
                 <div class="slds-form-element__help slds-text-color_error">{errorMessage}</div>
             </template>
         </div>
+    </div>
     </lightning-card>
 </template>

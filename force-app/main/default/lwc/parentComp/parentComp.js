@@ -5,8 +5,8 @@ import assignPermissionSets from '@salesforce/apex/UserController.assignPermissi
 import assignPermissionSetLicenses from '@salesforce/apex/UserController.assignPermissionSetLicenses';
 import createContact from '@salesforce/apex/UserController.createContact';
 import updateAccountContactRelation from '@salesforce/apex/UserController.updateAccountContactRelation';
-import addUserToQueue from '@salesforce/apex/UserController.addUserToQueue';
-import getAgenceQueueName from '@salesforce/apex/UserController.getAgenceQueueName';
+import addUserToQueue from '@salesforce/apex/UserController.addUserToQueue' ; 
+import getAgenceQueueName from '@salesforce/apex/UserController.getAgenceQueueName' ; 
 
 export default class ParentComponent extends LightningElement {
     @track selectedType = '';
@@ -24,66 +24,222 @@ export default class ParentComponent extends LightningElement {
     @track civilite = '';
     @track email = '';
     @track username = '';
-    @track produits = ''; // Modifier le nom de la variable pour correspondre au composant enfant
-    @track isMultipicklistRequired = false; // Ajout d'une variable pour gérer la visibilité du composant enfant
-
+    @track produit = '';
    
 
     handleTypeChange(event) {
         this.selectedType = event.detail; // Récupère le type d'utilisateur sélectionné
         console.log('Selected Type in handleTypeChange:', this.selectedType);
-        this.updateMultipicklistRequired(); // Mettre à jour la visibilité du composant enfant
+        this.template.querySelector('c-agence').reset();
+        this.agenceId = ''; 
+        console.log('Agence in handleTypeChange:', this.agenceId);
+
     }
+
 
     lookupUpdatehandler(event) {
         const detail = event.detail;
         this.distributorId = detail ? detail : ''; // Set to empty string if distributor is removed
         this.Error = '';
         console.log('distributeur in lookupUpdatehandler:', this.distributorId);
+        
+        this.template.querySelector('c-agence').reset();
+        this.agenceId = ''; 
     }
 
     lookupUpdatehandlerAgence(event) {
-        const detail = event.detail;
+        const detail = event.detail ;
         this.agenceId = detail ? detail : '';
-        console.log('Agence in handleTypeChange:', this.agenceId);
+        console.log('Agence in handleAgenceChange:', this.agenceId);
     }
 
     handleCancel() {
-        this.showForm = false; // On ajoutera une logique pour revenir à la page de création ou autre
+        // Réinitialiser toutes les valeurs des champs
+        this.selectedType = '';
+        this.distributorId = '';
+        this.agenceId = '';
+        this.nom = '';
+        this.prenom = '';
+        this.civilite = '';
+        this.email = '';
+        this.username = '';
+        this.produit = '';
+    
+        
+    
+        // Réinitialiser les messages d'erreur si nécessaire
+        this.template.querySelector('c-agence').reset();
+        this.template.querySelector('c-distributeur').reset();
+        this.template.querySelector('c-information-contact-user').reset();
+        this.template.querySelector('c-type-user').reset();
+
     }
 
     handleSave() {
+
         const agenceComponent = this.template.querySelector('c-agence');
         const isAgenceValid = agenceComponent && agenceComponent.validateLookup();
-
+    
         const distributeurComponent = this.template.querySelector('c-distributeur');
         const isDistributeurValid = distributeurComponent && distributeurComponent.validateLookup();
-
+    
         const typeUserComponent = this.template.querySelector('c-type-user');
         const isTypeUserValid = typeUserComponent && typeUserComponent.validateType();
-
+    
         const contactUserComponent = this.template.querySelector('c-information-contact-user');
         const isContactUserValid = contactUserComponent && contactUserComponent.validateFields();
-
-        // Vérification si des produits sont sélectionnés
-        const produitsComponent = this.template.querySelector('c-multipicklist-product');
-        const selectedProducts = produitsComponent ? produitsComponent.getSelectedList() : null;
-
-        if (!isAgenceValid || !isDistributeurValid || !isTypeUserValid || !isContactUserValid || !selectedProducts) {
-            this.showToast('Erreur', 'Veuillez remplir tous les champs obligatoires.', 'error');
+    
+        if (!isAgenceValid || !isDistributeurValid || !isTypeUserValid || !isContactUserValid) {
             return;
         }
 
-        // this.selectedProducts = selectedProducts;
-
         this.showForm = false; // Masquer le formulaire après avoir sauvegardé
         this.showToast('Info', `Selected Type: ${this.selectedType}`, 'info');
-        console.log('Selected Type in handleSave:', this.selectedType);
+        console.log('Selected Type in handleSave:', this.selectedType); 
         let userId; // Déclaration de userId pour qu'il soit accessible dans toute la méthode handleSave
-        let contactId;
+        let contactId; 
+    
+        if (this.selectedType === 'Livreur' || this.selectedType === 'Animateur') {
+            // Appeler la méthode Apex pour créer un nouvel utilisateur
+            createUser({ 
+                username: this.username,
+                firstName: this.nom,
+                lastName: this.prenom,
+                email: this.email,
+                profileName: 'End User',
+                contactId: null 
+            })
+            .then(result => {
+                // Affichez un message de succès à l'utilisateur
+                this.showToast('Success', 'User created successfully', 'success');
+                
+                // Capturer l'ID de l'utilisateur créé
+                userId = result; 
+    
+                // Définir les Permission Sets de base
+                let permSetNames = ['LightningRetailExecutionStarter', 'MapsUser'];
+                console.log('Selected Type in then:', this.selectedType); 
+                
+                // Ajouter des Permission Sets spécifiques si le type est 'livreur'
+                if (this.selectedType === 'Livreur') {
+                    permSetNames.push('ActionPlans');
+                }
+                // Ajouter des Permission Sets spécifiques si le type est 'Animateur' et le produit est 'adsl' ou 'ftth'
+             if (this.selectedType === 'Animateur' && this.produit === 'ADSL') {
+                permSetNames.push('ADSL');
+             } else if (this.selectedType === 'Animateur' && this.produit === 'FTTH') {
+                permSetNames.push('FTTH');
+              }
+    
+                // Appel de la méthode pour attribuer les Permission Sets
+                return assignPermissionSets({ permSetNames: permSetNames, userId: userId });
+            })
+            .then(() => {
+                // Affichez un message de succès pour l'attribution des Permission Sets
+                this.showToast('Success', 'Permission sets assigned successfully', 'success');
+    
+                // Définir les Permission Set Licenses de base
+                let permSetLicenseNames = ['SFMaps_Maps_LiveMobileTracking', 'IndustriesVisitPsl', 'SFMaps_Maps_Advanced', 'LightningRetailExecutionStarterPsl'];
+    
+                // Appel de la méthode pour attribuer les Permission Set Licenses
+                return assignPermissionSetLicenses({ permSetLicenseNames: permSetLicenseNames, userId: userId });
+            })
+            .then(() => {
+                // Affichez un message de succès pour l'attribution des Permission Set Licenses
+                this.showToast('Success', 'Permission set licenses assigned successfully', 'success');
+                
+                // Appeler la méthode Apex pour créer un nouveau contact
+                return createContact({
+                    civilite: this.civilite,
+                    firstName: this.nom,
+                    lastName: this.prenom,
+                    email: this.email,
+                    userId: userId,
+                    accountId: this.agenceId,
+                    inwiCGC_UserCGC__c: userId
+                });
+            })
+            .then(result => {
+                // Capturer l'ID du contact créé
+                contactId = result;
+                this.showToast('Success', 'Contact created successfully', 'success');
+                console.log('Contact created with ID:', contactId);
+    
+                // Si le type sélectionné est 'Livreur', créer la relation AccountContactRelation
+                if (this.selectedType === 'Livreur') {
+                    console.log('Selected type is Livreur, creating AccountContactRelation');
+                    return updateAccountContactRelation({
+                        contactId: contactId,
+                        accountId: this.agenceId,
+                        role: 'inwiB2C_ChefEquipe'
+                    })
+                    .then(() => {
+                        // Affichez un message de succès pour la création de la relation AccountContactRelation
+                        this.showToast('Success', 'Account-Contact relation created successfully', 'success');
+                    });
+                }
+            })
+            .catch(error => {
+                // Affichez un message d'erreur à l'utilisateur
+                this.showToast('Error', 'Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ' + (error.body ? error.body.message : error.message), 'error');
+                console.error('Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ', error);
+            });
+        } else  if (this.selectedType === 'Utilisateur BO') {
+            createContact({
+                civilite: this.civilite,
+                firstName: this.nom,
+                lastName: this.prenom,
+                email: this.email,
+                userId: userId,
+                accountId: this.agenceId,
+                inwiCGC_UserCGC__c: null
+            })
+            .then(result => {
+                // Capturer l'ID du contact créé
+                contactId = result;
+                this.showToast('Success', 'Contact for Utilisateur BO created successfully', 'success');
+                console.log('Contact created with ID:', contactId);
 
-        // Logique de sauvegarde pour les différents types d'utilisateur...
+                // Créer l'utilisateur Salesforce avec le profil "BO Distributeur"
+                return createUser({
+                    username: this.username,
+                    firstName: this.nom,
+                    lastName: this.prenom,
+                    email: this.email,
+                    profileName: 'BO Distributeur',
+                    contactId: contactId 
+                });
+            })
+            .then(result => {
+                userId = result ;
+                // Fetch Queue Name from Agence
+                return getAgenceQueueName({ agenceId: this.agenceId });
+            })
+            .then(queueName => {
+                if (queueName) {
+                    // Add User to Queue
+                    return addUserToQueue({
+                        userId: userId,
+                        queueName: queueName
+                    });
+                } else {
+                    throw new Error('Aucun nom de file d\'attente trouvé pour l\'agence spécifiée.');
+                }
+            })
+            .then(() => {
+                this.showToast('Success', 'User for Utilisateur BO created successfully and added to Queue', 'success');
+                console.log('User created for Utilisateur BO and added to Queue');
+            })
+            .catch(error => {
+                this.showToast('Error', 'Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ' + (error.body ? error.body.message : error.message), 'error');
+                console.error('Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ', error);
+            });
+        } else {
+            
+        }
+        
     }
+    
 
     showToast(title, message, variant) {
         const evt = new ShowToastEvent({
@@ -92,17 +248,6 @@ export default class ParentComponent extends LightningElement {
             variant: variant,
         });
         this.dispatchEvent(evt);
-    }
-
-    // Mettre à jour la visibilité du composant enfant
-    updateMultipicklistRequired() {
-        this.isMultipicklistRequired = this.selectedType === 'Animateur' || this.selectedType === 'Livreur';
-    }
-
-    // Gérer l'événement selectionchange et mettre à jour la variable produits dans le composant parent
-    handleSelectionChange(event) {
-        this.produits = event.detail; // Mettre à jour la variable produits
-        console.log('Selected Products:', this.produits);
     }
 
     handleNomUpdate(event) {
@@ -123,5 +268,9 @@ export default class ParentComponent extends LightningElement {
 
     handleUsernameUpdate(event) {
         this.username = event.detail;
+    }
+
+    handleProduitUpdate(event) {
+        this.produit = event.detail;
     }
 }

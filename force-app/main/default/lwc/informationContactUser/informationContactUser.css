@@ -1,0 +1,25 @@
+/* Styles personnalisés pour les éléments de formulaire */
+.slds-form-element.custom-form-element {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0rem; /* Espace entre chaque élément de formulaire */
+}
+
+.slds-form-element__label {
+    margin-bottom: 0rem; /* Espace entre le label et l'input */
+}
+
+.form-container {
+    max-width: 500px; /* Largeur maximale du formulaire */
+    margin: 0 auto; /* Centrer le formulaire horizontalement */
+}
+
+lightning-input, lightning-combobox {
+    width: 100%; /* Assurer que les inputs et combobox prennent toute la largeur disponible */
+}
+
+ 
+.bold-label .slds-form-element__label {
+    font-weight: bold;
+}
+

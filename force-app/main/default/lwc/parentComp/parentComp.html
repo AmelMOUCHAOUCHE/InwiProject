@@ -1,60 +1,54 @@
 <template>
-    <div class="slds-p-around_medium">
-        <template if:false={showForm}>
-            <!-- <lightning-button label="New" onclick={handleNew} variant="brand"></lightning-button> -->
-        </template>
-        <div class="slds-box slds-theme_default slds-p-around_medium">
-            <div class="slds-grid slds-wrap slds-gutters">
-                <div class="slds-col slds-size_1-of-1">
-                    <div class="slds-form slds-form_stacked">
-                        <div class="slds-form-element slds-size_1-of-1">
-                            <label class="slds-form-element__label" for="type">Type</label>
-                            <div class="slds-form-element__control">
-                                <c-type-user ontypechange={handleTypeChange} required="true"></c-type-user>
-                            </div>
-                        </div>
-                        <div class="slds-form-element slds-size_1-of-1">
-                            <label class="slds-form-element__label" for="distributor">Distributor</label>
-                            <div class="slds-form-element__control">
-                                <c-distributeur onlookupupdate={lookupUpdatehandler} required="true"></c-distributeur>
-                            </div>
-                        </div>
-                        <div class="slds-form-element slds-size_1-of-1">
-                            <label class="slds-form-element__label" for="agence">Agence</label>
-                            <div class="slds-form-element__control">
-                                <c-agence selected-type={selectedType} distributor-id={distributorId} onlookupupdate={lookupUpdatehandlerAgence} required="true"></c-agence>
-                            </div>
+    <div class="custom-form-container">
+        
+        <h1 class="form-title">Create User D2D</h1>
+        <div class="separator"></div>
+
+        <div class="custom-grid">
+            <div class="custom-grid-item custom-type-user">
+                <div class="slds-form slds-form_stacked">
+                    <div class="slds-form-element slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <c-type-user ref="typeUserComponent" ontypechange={handleTypeChange} required="true"></c-type-user>
                         </div>
                     </div>
                 </div>
-                <div class="slds-col slds-size_1-of-1">
-                    <div class="slds-box slds-p-around_medium slds-theme_shade">
-                        <c-information-contact-user
-                            selected-type={selectedType}
-                            onnomupdate={handleNomUpdate}
-                            onprenomupdate={handlePrenomUpdate}
-                            onciviliteupdate={handleCiviliteUpdate}
-                            onemailupdate={handleEmailUpdate}
-                            onusernameupdate={handleUsernameUpdate}
-                            required="true">
-                        </c-information-contact-user>
-                    </div>
-                </div>   
-              
-    <c-multipicklist-product 
-    type-user={selectedType} 
-    if:true={shouldShowMultipicklist} 
-    onselectionchange={handleSelectionChange} 
-    required="true">
-</c-multipicklist-product>
             </div>
-            
-        </div>      
-    
- 
-
-        <footer class="slds-m-top_medium slds-text-align_center">
-            <lightning-button label="Cancel" onclick={handleCancel} variant="neutral"></lightning-button>
+            <div class="custom-grid-item custom-distributeur">
+                <div class="slds-form slds-form_stacked">
+                    <div class="slds-form-element slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <c-distributeur ref="distributeurComponent" class="custom-component" onlookupupdate={lookupUpdatehandler} required="true"></c-distributeur>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-grid-item custom-agence">
+                <div class="slds-form slds-form_stacked">
+                    <div class="slds-form-element slds-size_1-of-1">
+                        <div class="slds-form-element__control">
+                            <c-agence ref="agenceComponent" class="custom-component" selected-type={selectedType} distributor-id={distributorId} onlookupupdate={lookupUpdatehandlerAgence} required="true"></c-agence>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="custom-grid-item custom-contact-user">
+                <c-information-contact-user 
+                    selected-type={selectedType}
+                    onnomupdate={handleNomUpdate}
+                    onprenomupdate={handlePrenomUpdate}
+                    onciviliteupdate={handleCiviliteUpdate}
+                    onemailupdate={handleEmailUpdate}
+                    onusernameupdate={handleUsernameUpdate}
+                    onproduitupdate={handleProduitUpdate}
+                    required="true"
+                    ref="contactUserComponent">
+                </c-information-contact-user>
+            </div>
+        </div>
+        
+        <footer class="footer">
+            <lightning-button label="Cancel" onclick={handleCancel} variant="neutral" selected-type={selectedType}></lightning-button>
             <lightning-button label="Save" onclick={handleSave} selected-type={selectedType} variant="brand"></lightning-button>
         </footer>
     </div>

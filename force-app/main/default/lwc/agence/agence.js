@@ -124,4 +124,18 @@ export default class Agence extends LightningElement {
         this.errorMessage = this.required && !isValid ? 'This field is required.' : '';
         return isValid;
     }
-}
+    @api
+    reset() {
+        this.searchKey = '';
+        this.selectedRecord = {};
+        this.agenceId = '';
+        this.errorMessage = '';
+
+        const searchBoxWrapper = this.template.querySelector('.searchBoxWrapper');
+        searchBoxWrapper.classList.remove('slds-hide');
+        searchBoxWrapper.classList.add('slds-show');
+        const pillDiv = this.template.querySelector('.pillDiv');
+        pillDiv.classList.remove('slds-show');
+        pillDiv.classList.add('slds-hide');
+    }
+    }

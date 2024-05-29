@@ -27,4 +27,9 @@ export default class TypeUser extends LightningElement {
         this.errorMessage = this.required && !isValid ? 'This field is required.' : '';
         return isValid;
     }
+    @api
+    reset() {
+        this.selectedType = '';
+        this.errorMessage = '';
+    }
 }

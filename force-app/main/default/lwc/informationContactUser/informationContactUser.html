@@ -1,45 +1,118 @@
 <template>
     <lightning-card title="Formulaire Utilisateur">
         <div class="slds-p-around_medium">
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="civilite">Civilité <abbr class="slds-required" title="required">*</abbr></label>
-                <lightning-combobox id="civilite" name="civilite" value={civilite} options={civiliteOptions} onchange={handleCiviliteChange}></lightning-combobox>
+            <!-- Civilité Field -->
+            <div class="slds-form-element custom-form-element">
+                <label class="slds-form-element__label bold-label" for="civilite">
+                    <!--Civilité--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                </label>
+                <lightning-combobox
+                    label="Civilité"
+                    id="civilite"
+                    name="civilite"
+                    value={civilite}
+                    options={civiliteOptions}
+                    onchange={handleCiviliteChange}
+                    required="true"
+                ></lightning-combobox>
                 <template if:true={errorMessageCivilite}>
                     <div class="slds-form-element__help slds-text-color_error">{errorMessageCivilite}</div>
                 </template>
             </div>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="nom">Nom <abbr class="slds-required" title="required">*</abbr></label>
-                <lightning-input id="nom" name="nom" value={nom} onchange={handleNomChange}></lightning-input>
+            <!-- Nom Field -->
+            <div class="slds-form-element custom-form-element">
+                <label class="slds-form-element__label bold-label" for="nom">
+                    <!--Nom--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                </label>
+                <lightning-input               
+                    label="Nom"
+                    id="nom"
+                    name="nom"
+                    value={nom}
+                    onchange={handleNomChange}
+                    required="true"
+                ></lightning-input>
                 <template if:true={errorMessageNom}>
                     <div class="slds-form-element__help slds-text-color_error">{errorMessageNom}</div>
                 </template>
             </div>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="prenom">Prénom <abbr class="slds-required" title="required">*</abbr></label>
-                <lightning-input id="prenom" name="prenom" value={prenom} onchange={handlePrenomChange}></lightning-input>
+            <!-- Prénom Field -->
+            <div class="slds-form-element custom-form-element">
+                <label class="slds-form-element__label" for="prenom">
+                    <!--Prénom--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                </label>
+                <lightning-input
+                    label="Prénom"
+                    id="prenom"
+                    name="prenom"
+                    value={prenom}
+                    onchange={handlePrenomChange}
+                    required="true"
+                ></lightning-input>
                 <template if:true={errorMessagePrenom}>
                     <div class="slds-form-element__help slds-text-color_error">{errorMessagePrenom}</div>
                 </template>
             </div>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="email">Email <abbr class="slds-required" title="required">*</abbr></label>
-                <lightning-input id="email" name="email" type="email" value={email} onchange={handleEmailChange}></lightning-input>
+            <!-- Email Field -->
+            <div class="slds-form-element custom-form-element">
+                <label class="slds-form-element__label" for="email">
+                    <!--Email--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                </label>
+                <lightning-input
+                    label="Email"
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={email}
+                    onchange={handleEmailChange}
+                    required="true"
+                ></lightning-input>
                 <template if:true={errorMessageEmail}>
                     <div class="slds-form-element__help slds-text-color_error">{errorMessageEmail}</div>
                 </template>
             </div>
 
-            <div class="slds-form-element">
-                <label class="slds-form-element__label" for="username">Username <abbr class="slds-required" title="required" if:true={required}>*</abbr></label>
-                <lightning-input id="username" name="username" value={username} onchange={handleUsernameChange}></lightning-input>
+            <!-- Username Field -->
+            <div class="slds-form-element custom-form-element">
+                <label class="slds-form-element__label" for="username">
+                    <!--Username--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                </label>
+                <lightning-input
+                    label="Username"
+                    id="username"
+                    name="username"
+                    value={username}
+                    onchange={handleUsernameChange}
+                    required="true"
+                ></lightning-input>
                 <template if:true={errorMessageUsername}>
                     <div class="slds-form-element__help slds-text-color_error">{errorMessageUsername}</div>
                 </template>
             </div>
+
+            <!-- Produit Field (Conditional) -->
+            <template if:true={showProduitField}>
+                 <div class="slds-form-element custom-form-element"> 
+                    <label class="slds-form-element__label" for="produit">
+                        <!--Produit--> <abbr class="slds-required" title="required"><!--*--></abbr>
+                    </label>
+                    <lightning-checkbox-group
+                        label="Produit"
+                        id="produit"
+                        name="produit"
+                        value={produit}
+                        options={produitOptions}
+                        onchange={handleProduitChange}
+                        required="true"                      
+                    ></lightning-checkbox-group>
+                    <template if:true={errorMessageProduit}>
+                        <div class="slds-form-element__help slds-text-color_error">{errorMessageProduit}</div>
+                    </template>
+                 </div> 
+            </template>
         </div>
     </lightning-card>
 </template>

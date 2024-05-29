@@ -21,10 +21,6 @@ export default class MultipicklistProduct extends LightningElement {
         this.dispatchEvent(selectionChangeEvent);
     }
 
-     get shouldShowMultipicklist() {
-        return this.selectedType === 'Animateur' || this.selectedType === 'Livreur';
-    }
-
     @api
     validateProduct() {
         let isValid = true;
