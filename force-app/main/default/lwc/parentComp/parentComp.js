@@ -5,8 +5,8 @@ import assignPermissionSets from '@salesforce/apex/UserController.assignPermissi
 import assignPermissionSetLicenses from '@salesforce/apex/UserController.assignPermissionSetLicenses';
 import createContact from '@salesforce/apex/UserController.createContact';
 import updateAccountContactRelation from '@salesforce/apex/UserController.updateAccountContactRelation';
-import addUserToQueue from '@salesforce/apex/UserController.addUserToQueue' ; 
-import getAgenceQueueName from '@salesforce/apex/UserController.getAgenceQueueName' ; 
+import addUserToQueue from '@salesforce/apex/UserController.addUserToQueue';
+import getAgenceQueueName from '@salesforce/apex/UserController.getAgenceQueueName';
 
 export default class ParentComponent extends LightningElement {
     @track selectedType = '';
@@ -24,8 +24,7 @@ export default class ParentComponent extends LightningElement {
     @track civilite = '';
     @track email = '';
     @track username = '';
-    @track produit = '';
-   
+    @track produit = [];
 
     handleTypeChange(event) {
         this.selectedType = event.detail; // Récupère le type d'utilisateur sélectionné
@@ -33,16 +32,13 @@ export default class ParentComponent extends LightningElement {
         this.template.querySelector('c-agence').reset();
         this.agenceId = ''; 
         console.log('Agence in handleTypeChange:', this.agenceId);
-
     }
-
 
     lookupUpdatehandler(event) {
         const detail = event.detail;
         this.distributorId = detail ? detail : ''; // Set to empty string if distributor is removed
         this.Error = '';
         console.log('distributeur in lookupUpdatehandler:', this.distributorId);
-        
         this.template.querySelector('c-agence').reset();
         this.agenceId = ''; 
     }
@@ -63,32 +59,28 @@ export default class ParentComponent extends LightningElement {
         this.civilite = '';
         this.email = '';
         this.username = '';
-        this.produit = '';
-    
-        
-    
+        this.produit = [];
+       
         // Réinitialiser les messages d'erreur si nécessaire
         this.template.querySelector('c-agence').reset();
         this.template.querySelector('c-distributeur').reset();
         this.template.querySelector('c-information-contact-user').reset();
         this.template.querySelector('c-type-user').reset();
-
     }
 
     handleSave() {
-
         const agenceComponent = this.template.querySelector('c-agence');
         const isAgenceValid = agenceComponent && agenceComponent.validateLookup();
-    
+
         const distributeurComponent = this.template.querySelector('c-distributeur');
         const isDistributeurValid = distributeurComponent && distributeurComponent.validateLookup();
-    
+
         const typeUserComponent = this.template.querySelector('c-type-user');
         const isTypeUserValid = typeUserComponent && typeUserComponent.validateType();
-    
+
         const contactUserComponent = this.template.querySelector('c-information-contact-user');
         const isContactUserValid = contactUserComponent && contactUserComponent.validateFields();
-    
+
         if (!isAgenceValid || !isDistributeurValid || !isTypeUserValid || !isContactUserValid) {
             return;
         }
@@ -98,13 +90,13 @@ export default class ParentComponent extends LightningElement {
         console.log('Selected Type in handleSave:', this.selectedType); 
         let userId; // Déclaration de userId pour qu'il soit accessible dans toute la méthode handleSave
         let contactId; 
-    
+
         if (this.selectedType === 'Livreur' || this.selectedType === 'Animateur') {
             // Appeler la méthode Apex pour créer un nouvel utilisateur
             createUser({ 
                 username: this.username,
-                firstName: this.nom,
-                lastName: this.prenom,
+                firstName: this.prenom,
+                lastName: this.nom,
                 email: this.email,
                 profileName: 'End User',
                 contactId: null 
@@ -115,32 +107,29 @@ export default class ParentComponent extends LightningElement {
                 
                 // Capturer l'ID de l'utilisateur créé
                 userId = result; 
-    
+
                 // Définir les Permission Sets de base
                 let permSetNames = ['LightningRetailExecutionStarter', 'MapsUser'];
                 console.log('Selected Type in then:', this.selectedType); 
-                
-                // Ajouter des Permission Sets spécifiques si le type est 'livreur'
-                if (this.selectedType === 'Livreur') {
-                    permSetNames.push('ActionPlans');
+
+                for (let item of this.produit) {
+                    if (this.selectedType === 'Animateur' && item === 'ADSL') {
+                        permSetNames.push('ADSL');
+                    } else if (this.selectedType === 'Animateur' && item === 'FTTH') {
+                        permSetNames.push('FTTH');
+                    }                
                 }
-                // Ajouter des Permission Sets spécifiques si le type est 'Animateur' et le produit est 'adsl' ou 'ftth'
-             if (this.selectedType === 'Animateur' && this.produit === 'ADSL') {
-                permSetNames.push('ADSL');
-             } else if (this.selectedType === 'Animateur' && this.produit === 'FTTH') {
-                permSetNames.push('FTTH');
-              }
-    
+                
                 // Appel de la méthode pour attribuer les Permission Sets
                 return assignPermissionSets({ permSetNames: permSetNames, userId: userId });
             })
             .then(() => {
                 // Affichez un message de succès pour l'attribution des Permission Sets
                 this.showToast('Success', 'Permission sets assigned successfully', 'success');
-    
+
                 // Définir les Permission Set Licenses de base
                 let permSetLicenseNames = ['SFMaps_Maps_LiveMobileTracking', 'IndustriesVisitPsl', 'SFMaps_Maps_Advanced', 'LightningRetailExecutionStarterPsl'];
-    
+
                 // Appel de la méthode pour attribuer les Permission Set Licenses
                 return assignPermissionSetLicenses({ permSetLicenseNames: permSetLicenseNames, userId: userId });
             })
@@ -151,8 +140,8 @@ export default class ParentComponent extends LightningElement {
                 // Appeler la méthode Apex pour créer un nouveau contact
                 return createContact({
                     civilite: this.civilite,
-                    firstName: this.nom,
-                    lastName: this.prenom,
+                    firstName: this.prenom,
+                    lastName: this.nom,
                     email: this.email,
                     userId: userId,
                     accountId: this.agenceId,
@@ -164,7 +153,7 @@ export default class ParentComponent extends LightningElement {
                 contactId = result;
                 this.showToast('Success', 'Contact created successfully', 'success');
                 console.log('Contact created with ID:', contactId);
-    
+
                 // Si le type sélectionné est 'Livreur', créer la relation AccountContactRelation
                 if (this.selectedType === 'Livreur') {
                     console.log('Selected type is Livreur, creating AccountContactRelation');
@@ -184,11 +173,11 @@ export default class ParentComponent extends LightningElement {
                 this.showToast('Error', 'Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ' + (error.body ? error.body.message : error.message), 'error');
                 console.error('Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ', error);
             });
-        } else  if (this.selectedType === 'Utilisateur BO') {
+        } else if (this.selectedType === 'Utilisateur BO') {
             createContact({
                 civilite: this.civilite,
-                firstName: this.nom,
-                lastName: this.prenom,
+                firstName: this.prenom,
+                lastName: this.nom,
                 email: this.email,
                 userId: userId,
                 accountId: this.agenceId,
@@ -203,15 +192,15 @@ export default class ParentComponent extends LightningElement {
                 // Créer l'utilisateur Salesforce avec le profil "BO Distributeur"
                 return createUser({
                     username: this.username,
-                    firstName: this.nom,
-                    lastName: this.prenom,
+                    firstName: this.prenom,
+                    lastName: this.nom,
                     email: this.email,
                     profileName: 'BO Distributeur',
                     contactId: contactId 
                 });
             })
             .then(result => {
-                userId = result ;
+                userId = result;
                 // Fetch Queue Name from Agence
                 return getAgenceQueueName({ agenceId: this.agenceId });
             })
@@ -235,11 +224,9 @@ export default class ParentComponent extends LightningElement {
                 console.error('Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ', error);
             });
         } else {
-            
+            // Logic for other user types can be added here
         }
-        
     }
-    
 
     showToast(title, message, variant) {
         const evt = new ShowToastEvent({

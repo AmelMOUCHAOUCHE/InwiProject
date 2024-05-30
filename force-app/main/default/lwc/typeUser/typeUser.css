@@ -1,0 +1,28 @@
+/* Ajout de marge autour de l'élément principal */
+.slds-p-around_medium {
+    padding: 1rem; /* Ajuste la marge intérieure pour l'espacement */
+     margin-bottom: 0rem; /* Espace entre chaque élément de formulaire */
+}
+
+/* Style pour les éléments de formulaire */
+.slds-form-element {
+    margin-bottom: 0rem; /* Espace entre les éléments de formulaire */
+}
+
+/* Style pour les labels */
+.slds-form-element__label {
+    font-weight: bold; /* Met le texte du label en gras */
+}
+
+/* Style pour l'élément abbr (indicateur requis) */
+.slds-required {
+    
+    margin-left: 0.25rem; /* Espace à gauche de l'astérisque */
+}
+
+ 
+
+/* Optionnel : Style pour l'élément lightning-combobox */
+.lightning-combobox {
+    width: 100%; /* Assure que le combobox occupe toute la largeur disponible */
+}
