@@ -20,6 +20,12 @@
     margin-left: 0.25rem; /* Espace à gauche de l'astérisque */
 }
 
+.custom-form-element {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+
  
 
 /* Optionnel : Style pour l'élément lightning-combobox */

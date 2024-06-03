@@ -69,164 +69,142 @@ export default class ParentComponent extends LightningElement {
     }
 
     handleSave() {
-        const agenceComponent = this.template.querySelector('c-agence');
-        const isAgenceValid = agenceComponent && agenceComponent.validateLookup();
+    const agenceComponent = this.template.querySelector('c-agence');
+    const isAgenceValid = agenceComponent && agenceComponent.validateLookup();
 
-        const distributeurComponent = this.template.querySelector('c-distributeur');
-        const isDistributeurValid = distributeurComponent && distributeurComponent.validateLookup();
+    const distributeurComponent = this.template.querySelector('c-distributeur');
+    const isDistributeurValid = distributeurComponent && distributeurComponent.validateLookup();
 
-        const typeUserComponent = this.template.querySelector('c-type-user');
-        const isTypeUserValid = typeUserComponent && typeUserComponent.validateType();
+    const typeUserComponent = this.template.querySelector('c-type-user');
+    const isTypeUserValid = typeUserComponent && typeUserComponent.validateType();
 
-        const contactUserComponent = this.template.querySelector('c-information-contact-user');
-        const isContactUserValid = contactUserComponent && contactUserComponent.validateFields();
+    const contactUserComponent = this.template.querySelector('c-information-contact-user');
+    const isContactUserValid = contactUserComponent && contactUserComponent.validateFields();
 
-        if (!isAgenceValid || !isDistributeurValid || !isTypeUserValid || !isContactUserValid) {
-            return;
-        }
+    if (!isAgenceValid || !isDistributeurValid || !isTypeUserValid || !isContactUserValid) {
+        this.showToast('Error', 'Validation failed. Please check the inputs.', 'error');
+        return;
+    }
 
-        this.showForm = false; // Masquer le formulaire après avoir sauvegardé
-        this.showToast('Info', `Selected Type: ${this.selectedType}`, 'info');
-        console.log('Selected Type in handleSave:', this.selectedType); 
-        let userId; // Déclaration de userId pour qu'il soit accessible dans toute la méthode handleSave
-        let contactId; 
+    this.showForm = false; // Masquer le formulaire après avoir sauvegardé
+    this.showToast('Info', `Selected Type: ${this.selectedType}`, 'info');
+    console.log('Selected Type in handleSave:', this.selectedType); 
+    let userId; // Déclaration de userId pour qu'il soit accessible dans toute la méthode handleSave
+    let contactId; 
 
-        if (this.selectedType === 'Livreur' || this.selectedType === 'Animateur') {
-            // Appeler la méthode Apex pour créer un nouvel utilisateur
-            createUser({ 
-                username: this.username,
-                firstName: this.prenom,
-                lastName: this.nom,
-                email: this.email,
-                profileName: 'End User',
-                contactId: null 
-            })
-            .then(result => {
-                // Affichez un message de succès à l'utilisateur
-                this.showToast('Success', 'User created successfully', 'success');
-                
-                // Capturer l'ID de l'utilisateur créé
-                userId = result; 
+    if (this.selectedType === 'Livreur' || this.selectedType === 'Animateur') {
+        // Appeler la méthode Apex pour créer un nouvel utilisateur
+        createUser({ 
+            username: this.username,
+            firstName: this.prenom,
+            lastName: this.nom,
+            email: this.email,
+            profileName: 'End User',
+            contactId: null 
+        })
+        .then(result => {
+            this.showToast('Success', 'User created successfully', 'success');
+            userId = result; 
 
-                // Définir les Permission Sets de base
-                let permSetNames = ['LightningRetailExecutionStarter', 'MapsUser'];
-                console.log('Selected Type in then:', this.selectedType); 
+            let permSetNames = ['LightningRetailExecutionStarter', 'MapsUser'];
+            for (let item of this.produit) {
+                if (this.selectedType === 'Animateur' && item === 'ADSL') {
+                    permSetNames.push('ADSL');
+                } else if (this.selectedType === 'Animateur' && item === 'FTTH') {
+                    permSetNames.push('FTTH');
+                }                
+            }
+            return assignPermissionSets({ permSetNames: permSetNames, userId: userId });
+        })
+        .then(() => {
+            this.showToast('Success', 'Permission sets assigned successfully', 'success');
 
-                for (let item of this.produit) {
-                    if (this.selectedType === 'Animateur' && item === 'ADSL') {
-                        permSetNames.push('ADSL');
-                    } else if (this.selectedType === 'Animateur' && item === 'FTTH') {
-                        permSetNames.push('FTTH');
-                    }                
-                }
-                
-                // Appel de la méthode pour attribuer les Permission Sets
-                return assignPermissionSets({ permSetNames: permSetNames, userId: userId });
-            })
-            .then(() => {
-                // Affichez un message de succès pour l'attribution des Permission Sets
-                this.showToast('Success', 'Permission sets assigned successfully', 'success');
+            let permSetLicenseNames = ['SFMaps_Maps_LiveMobileTracking', 'IndustriesVisitPsl', 'SFMaps_Maps_Advanced', 'LightningRetailExecutionStarterPsl'];
+            return assignPermissionSetLicenses({ permSetLicenseNames: permSetLicenseNames, userId: userId });
+        })
+        .then(() => {
+            this.showToast('Success', 'Permission set licenses assigned successfully', 'success');
 
-                // Définir les Permission Set Licenses de base
-                let permSetLicenseNames = ['SFMaps_Maps_LiveMobileTracking', 'IndustriesVisitPsl', 'SFMaps_Maps_Advanced', 'LightningRetailExecutionStarterPsl'];
-
-                // Appel de la méthode pour attribuer les Permission Set Licenses
-                return assignPermissionSetLicenses({ permSetLicenseNames: permSetLicenseNames, userId: userId });
-            })
-            .then(() => {
-                // Affichez un message de succès pour l'attribution des Permission Set Licenses
-                this.showToast('Success', 'Permission set licenses assigned successfully', 'success');
-                
-                // Appeler la méthode Apex pour créer un nouveau contact
-                return createContact({
-                    civilite: this.civilite,
-                    firstName: this.prenom,
-                    lastName: this.nom,
-                    email: this.email,
-                    userId: userId,
-                    accountId: this.agenceId,
-                    inwiCGC_UserCGC__c: userId
-                });
-            })
-            .then(result => {
-                // Capturer l'ID du contact créé
-                contactId = result;
-                this.showToast('Success', 'Contact created successfully', 'success');
-                console.log('Contact created with ID:', contactId);
-
-                // Si le type sélectionné est 'Livreur', créer la relation AccountContactRelation
-                if (this.selectedType === 'Livreur') {
-                    console.log('Selected type is Livreur, creating AccountContactRelation');
-                    return updateAccountContactRelation({
-                        contactId: contactId,
-                        accountId: this.agenceId,
-                        role: 'inwiB2C_ChefEquipe'
-                    })
-                    .then(() => {
-                        // Affichez un message de succès pour la création de la relation AccountContactRelation
-                        this.showToast('Success', 'Account-Contact relation created successfully', 'success');
-                    });
-                }
-            })
-            .catch(error => {
-                // Affichez un message d'erreur à l'utilisateur
-                this.showToast('Error', 'Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ' + (error.body ? error.body.message : error.message), 'error');
-                console.error('Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ', error);
-            });
-        } else if (this.selectedType === 'Utilisateur BO') {
-            createContact({
+            return createContact({
                 civilite: this.civilite,
                 firstName: this.prenom,
                 lastName: this.nom,
                 email: this.email,
                 userId: userId,
                 accountId: this.agenceId,
-                inwiCGC_UserCGC__c: null
-            })
-            .then(result => {
-                // Capturer l'ID du contact créé
-                contactId = result;
-                this.showToast('Success', 'Contact for Utilisateur BO created successfully', 'success');
-                console.log('Contact created with ID:', contactId);
-
-                // Créer l'utilisateur Salesforce avec le profil "BO Distributeur"
-                return createUser({
-                    username: this.username,
-                    firstName: this.prenom,
-                    lastName: this.nom,
-                    email: this.email,
-                    profileName: 'BO Distributeur',
-                    contactId: contactId 
-                });
-            })
-            .then(result => {
-                userId = result;
-                // Fetch Queue Name from Agence
-                return getAgenceQueueName({ agenceId: this.agenceId });
-            })
-            .then(queueName => {
-                if (queueName) {
-                    // Add User to Queue
-                    return addUserToQueue({
-                        userId: userId,
-                        queueName: queueName
-                    });
-                } else {
-                    throw new Error('Aucun nom de file d\'attente trouvé pour l\'agence spécifiée.');
-                }
-            })
-            .then(() => {
-                this.showToast('Success', 'User for Utilisateur BO created successfully and added to Queue', 'success');
-                console.log('User created for Utilisateur BO and added to Queue');
-            })
-            .catch(error => {
-                this.showToast('Error', 'Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ' + (error.body ? error.body.message : error.message), 'error');
-                console.error('Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ', error);
+                inwiCGC_UserCGC__c: userId
             });
-        } else {
-            // Logic for other user types can be added here
-        }
+        })
+        .then(result => {
+            contactId = result;
+            this.showToast('Success', 'Contact created successfully', 'success');
+
+            if (this.selectedType === 'Livreur') {
+                return updateAccountContactRelation({
+                    contactId: contactId,
+                    accountId: this.agenceId,
+                    role: 'inwiB2C_ChefEquipe'
+                });
+            }
+        })
+        .then(() => {
+            if (this.selectedType === 'Livreur') {
+                this.showToast('Success', 'Account-Contact relation created successfully', 'success');
+            }
+        })
+        .catch(error => {
+            this.showToast('Error', 'Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ' + (error.body ? error.body.message : error.message), 'error');
+            console.error('Erreur lors de la création de l\'utilisateur ou de l\'attribution des permissions : ', error);
+        });
+    } else if (this.selectedType === 'Utilisateur BO') {
+        createContact({
+            civilite: this.civilite,
+            firstName: this.prenom,
+            lastName: this.nom,
+            email: this.email,
+            userId: null, // Ensure userId is null here as the user is not created yet
+            accountId: this.agenceId,
+            inwiCGC_UserCGC__c: null
+        })
+        .then(result => {
+            contactId = result;
+            this.showToast('Success', 'Contact for Utilisateur BO created successfully', 'success');
+            console.log('Contact created with ID:', contactId);
+
+            return createUser({
+                username: this.username,
+                firstName: this.prenom,
+                lastName: this.nom,
+                email: this.email,
+                profileName: 'BO Distributeur',
+                contactId: contactId 
+            });
+        })
+        .then(result => {
+            userId = result;
+            return getAgenceQueueName({ agenceId: this.agenceId });
+        })
+        .then(queueName => {
+            if (queueName) {
+                return addUserToQueue({
+                    userId: userId,
+                    queueName: queueName
+                });
+            } else {
+                throw new Error('Aucun nom de file d\'attente trouvé pour l\'agence spécifiée.');
+            }
+        })
+        .then(() => {
+            this.showToast('Success', 'User for Utilisateur BO created successfully and added to Queue', 'success');
+            console.log('User created for Utilisateur BO and added to Queue');
+        })
+        .catch(error => {
+            this.showToast('Error', 'Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ' + (error.body ? error.body.message : error.message), 'error');
+            console.error('Erreur lors de la création du contact ou de l\'ajout à la file d\'attente : ', error);
+        });
     }
+}
+
 
     showToast(title, message, variant) {
         const evt = new ShowToastEvent({

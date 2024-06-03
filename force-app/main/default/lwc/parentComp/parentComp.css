@@ -2,14 +2,11 @@
 body, html {
     height: 100%; /* Assure que le corps et le HTML prennent toute la hauteur de la fenêtre */
     margin: 0; /* Supprime les marges par défaut */
-    display: flex;
-    justify-content: center; /* Centre horizontalement le contenu */
-    align-items: center; /* Centre verticalement le contenu */
     font-family: Arial, sans-serif; /* Police par défaut */
     background-color: #f0f0f0; /* Couleur de fond */
 }
 
-.custom-form-container {
+.custom-form-container { 
     padding: 1rem;
     display: flex;
     flex-direction: column; /* Empile les éléments verticalement */
@@ -19,12 +16,11 @@ body, html {
     border-radius: 8px; /* Coins arrondis */
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Ombre douce */
     width: 60%; /* Largeur du formulaire */
-    max-width: 800px; /* Largeur maximale du formulaire */
+    max-width: 600px; /* Largeur maximale du formulaire */
     margin: 0 auto; /* Centre le formulaire horizontalement */
     padding: 2rem; /* Ajoute de l'espace intérieur */
     box-sizing: border-box; /* Inclut le padding dans la largeur/hauteur */
     position: relative; /* Permet de positionner les boutons */
-    
 }
 
 .custom-grid {
@@ -76,4 +72,18 @@ body, html {
     margin-bottom: 1rem; /* Espacement sous la ligne de séparation */
 }
 
-
+.sticky-buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px; /* Adjust as needed */
+    position: fixed;
+    bottom: 30px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    background-color: #f4f6f9; /* Adjust the background color as needed */
+    padding: 9px 0; /* Adjust padding as needed */
+    box-shadow: 0 -2px 5px rgba(0,0,0,0.1); /* Optional: add a shadow for better visibility */
+    z-index: 1000; /* Ensure it's above other content */
+}

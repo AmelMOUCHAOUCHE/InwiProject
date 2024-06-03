@@ -1,6 +1,5 @@
 <template>
     <div class="custom-form-container">
-        
         <h1 class="form-title">Create User D2D</h1>
         <div class="separator"></div>
 
@@ -44,13 +43,14 @@
                     required="true"
                     ref="informationContactUser"
                     onproduitchange={handleProduitChange}>
-                </c-information-contact-user>               
+                </c-information-contact-user>
             </div>
         </div>
-        
-        <footer class="footer">
+    </div>
+
+        <div class="sticky-buttons">
             <lightning-button label="Cancel" onclick={handleCancel} variant="neutral" selected-type={selectedType}></lightning-button>
             <lightning-button label="Save" onclick={handleSave} selected-type={selectedType} variant="brand"></lightning-button>
-        </footer>
+                         
     </div>
 </template>
